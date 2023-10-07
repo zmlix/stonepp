@@ -9,7 +9,7 @@ import (
 // args      : expr { "," expr }
 // postfix   : "(" [ args ] ")"
 // primary   : ("(" expr ")" | Number | Identifier | String | Boolean) { postfix }
-// factor    : "-" primary | primary
+// factor    : {"-"} primary
 // expr      : factor { Op factor}
 
 type Precedence struct {
@@ -33,11 +33,11 @@ var operators = map[string]Precedence{
 	"==": {prec: -5, leftAssoc: true},
 	"!=": {prec: -5, leftAssoc: true},
 	"&":  {prec: -6, leftAssoc: true},
-	"^":  {prec: -7, leftAssoc: false},
+	"^":  {prec: -7, leftAssoc: true},
 	"|":  {prec: -8, leftAssoc: true},
 	"&&": {prec: -9, leftAssoc: true},
 	"||": {prec: -10, leftAssoc: true},
-	"=":  {prec: -11, leftAssoc: true},
+	"=":  {prec: -11, leftAssoc: false},
 }
 
 func primaryParser() ast.ASTNode {
@@ -46,16 +46,16 @@ func primaryParser() ast.ASTNode {
 		tokenUtils.next()
 		left = exprParser()
 		if !tokenUtils.isToken(")", lexer.Symbol) {
-			log.Fatalf("primaryParser Error %v", tokenUtils.token())
+			log.Fatalln("SyntaxError line:", tokenUtils.token().GetLineNumber(), "缺少\")\"")
 		}
 	} else if tokenUtils.isType(lexer.Number) {
 		left = ast.NewNumberLiteral(tokenUtils.token())
 	} else if tokenUtils.isType(lexer.Identifier) {
-		left = ast.NewNumberLiteral(tokenUtils.token())
+		left = ast.NewIdentifierLiteral(tokenUtils.token())
 	} else if tokenUtils.isType(lexer.String) {
-		left = ast.NewNumberLiteral(tokenUtils.token())
+		left = ast.NewStringLiteral(tokenUtils.token())
 	} else if tokenUtils.isType(lexer.Boolean) {
-		left = ast.NewNumberLiteral(tokenUtils.token())
+		left = ast.NewBooleanLiteral(tokenUtils.token())
 	} else {
 		return left
 	}
@@ -65,9 +65,12 @@ func primaryParser() ast.ASTNode {
 
 func factorParser() ast.ASTNode {
 	var left ast.ASTNode
+	if tokenUtils.isToken("+", lexer.Symbol) {
+		log.Fatalln("SyntaxError line:", tokenUtils.token().GetLineNumber(), "多余的\"+\"")
+	}
 	if tokenUtils.isToken("-", lexer.Symbol) {
 		tokenUtils.next()
-		left = primaryParser()
+		left = factorParser()
 		if left != nil {
 			left = ast.NewNegativeExpr([]ast.ASTNode{left})
 		}

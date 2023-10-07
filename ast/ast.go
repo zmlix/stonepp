@@ -45,15 +45,3 @@ func (ast *ASTList) String() string {
 	}
 	return " " + s + " "
 }
-
-type Name struct {
-	Token *lexer.Token
-}
-
-func (ast *Name) Value() *lexer.Token {
-	return ast.Token
-}
-
-func (ast *Name) ChildrenList() ASTNode {
-	return nil
-}

@@ -5,20 +5,8 @@ import (
 	"stone/lexer"
 )
 
-type Expr struct {
-	ASTList
-}
-
-func (ast *Expr) String() string {
-	s := ""
-	for i := 0; i < len(ast.Children); i++ {
-		s += fmt.Sprintf("%v", ast.Children[i])
-	}
-	return " " + s + " "
-}
-
 type BinaryExpr struct {
-	Expr
+	ASTList
 	Operator *lexer.Token
 }
 
@@ -46,7 +34,7 @@ func (ast *BinaryExpr) String() string {
 }
 
 type NegativeExpr struct {
-	Expr
+	ASTList
 }
 
 func NewNegativeExpr(ch []ASTNode) *NegativeExpr {
@@ -56,11 +44,11 @@ func NewNegativeExpr(ch []ASTNode) *NegativeExpr {
 }
 
 func (ast *NegativeExpr) String() string {
-	return fmt.Sprintf("(-%v)", ast.Children[0])
+	return fmt.Sprintf("-(%v)", ast.Children[0])
 }
 
 type PrimaryExpr struct {
-	Expr
+	ASTList
 }
 
 func NewPrimaryExpr(ch []ASTNode) *PrimaryExpr {
@@ -70,5 +58,5 @@ func NewPrimaryExpr(ch []ASTNode) *PrimaryExpr {
 }
 
 func (ast *PrimaryExpr) String() string {
-	return fmt.Sprintf("(%v)", ast.Children[0])
+	return fmt.Sprintf("%v", ast.Children[0])
 }

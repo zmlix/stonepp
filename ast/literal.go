@@ -5,16 +5,8 @@ import (
 	"stone/lexer"
 )
 
-type Literal struct {
-	ASTLeaf
-}
-
-func (ast *Literal) String() string {
-	return fmt.Sprintf("%v", ast.Token.GetValue())
-}
-
 type NumberLiteral struct {
-	Literal
+	ASTLeaf
 }
 
 func NewNumberLiteral(token *lexer.Token) *NumberLiteral {
@@ -23,10 +15,36 @@ func NewNumberLiteral(token *lexer.Token) *NumberLiteral {
 	return nl
 }
 
+type IdentifierLiteral struct {
+	ASTLeaf
+}
+
+func NewIdentifierLiteral(token *lexer.Token) *IdentifierLiteral {
+	nl := &IdentifierLiteral{}
+	nl.Token = token
+	return nl
+}
+
 type StringLiteral struct {
-	Literal
+	ASTLeaf
+}
+
+func NewStringLiteral(token *lexer.Token) *StringLiteral {
+	nl := &StringLiteral{}
+	nl.Token = token
+	return nl
+}
+
+func (sl *StringLiteral) String() string {
+	return fmt.Sprintf("\"%v\"", sl.Token.GetValue())
 }
 
 type BooleanLiteral struct {
-	Literal
+	ASTLeaf
+}
+
+func NewBooleanLiteral(token *lexer.Token) *BooleanLiteral {
+	nl := &BooleanLiteral{}
+	nl.Token = token
+	return nl
 }

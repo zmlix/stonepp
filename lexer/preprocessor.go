@@ -27,7 +27,7 @@ func format(code_ string) string {
 	for i := 0; i < len(code_); i++ {
 		// fmt.Println(isString, i, string(code_[i]), slices.Contains(symbols, string(code_[i])))
 		if code_[i] == '"' {
-			if i-1 >= 0 && code_[i-1] != '\\' {
+			if isString && i-1 >= 0 && code_[i-1] != '\\' {
 				isString = false
 			} else {
 				isString = true
@@ -47,6 +47,9 @@ func format(code_ string) string {
 						space = true
 					}
 					break
+				}
+				if i+1 < len(code_) && code_[i+1] == '"' {
+					space = true
 				}
 				code += " " + string(code_[i])
 				if space {
