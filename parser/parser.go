@@ -50,6 +50,16 @@ func skipEOL() {
 	}
 }
 
+func programParser() ast.ASTNode {
+	var left ast.ASTNode
+	left = defParser()
+	if left != nil {
+		return left
+	}
+	left = statementParser()
+	return left
+}
+
 func Parser(tokens []*lexer.Token) []ast.ASTNode {
 	for _, token := range tokens {
 		token.Print()
@@ -59,7 +69,7 @@ func Parser(tokens []*lexer.Token) []ast.ASTNode {
 	var astNodes []ast.ASTNode
 	var node ast.ASTNode
 	for {
-		node = statementParser()
+		node = programParser()
 		if node == nil {
 			break
 		}

@@ -99,7 +99,7 @@ func parseString(word string) (string, error) {
 	return word[1 : len(word)-1], nil
 }
 
-func splitWord(line string) []string {
+func splitWord(lineNumber int, line string) []string {
 	line = strings.TrimSpace(line)
 	var words []string
 	var word string
@@ -122,6 +122,9 @@ func splitWord(line string) []string {
 		}
 
 		if line[i] == ' ' && word != "" {
+			if isString {
+				log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, "未闭合的字符串")
+			}
 			words = append(words, word)
 			word = ""
 			continue
@@ -131,6 +134,9 @@ func splitWord(line string) []string {
 		}
 	}
 	if word != "" {
+		if isString {
+			log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, "未闭合的字符串")
+		}
 		words = append(words, word)
 	}
 	return words
@@ -139,17 +145,14 @@ func splitWord(line string) []string {
 func ParseToken(code string) []*Token {
 	lines := strings.Split(code, "\n")
 	var words [][]string
-	for _, line := range lines {
-		words = append(words, splitWord(line))
+	for lineNumber, line := range lines {
+		words = append(words, splitWord(lineNumber, line))
 	}
-	// fmt.Printf("words: %d, %q\n", len(words), words)
+	fmt.Printf("words: %d, %q\n", len(words), words)
 
 	var tokens []*Token
 	for lineNumber, line := range words {
-		// fmt.Printf("lineNumber: %v\n", lineNumber)
-		// fmt.Printf("line: %q\n", line)
 		for _, word := range line {
-			// fmt.Printf("word: %v\n", word)
 			if word == "true" || word == "false" {
 				if word == "true" {
 					tokens = append(tokens, &Token{lineNumber + 1, Boolean, true})
@@ -161,26 +164,26 @@ func ParseToken(code string) []*Token {
 			} else if word[0] == '_' || unicode.IsLetter(rune(word[0])) {
 				tokenValue, err := parseIdentifier(word)
 				if err != nil {
-					log.Fatalf("SyntaxError line:%-4v -> %v", lineNumber+1, err)
+					log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
 				}
 				tokens = append(tokens, &Token{lineNumber + 1, Identifier, tokenValue})
 			} else if unicode.IsNumber(rune(word[0])) {
 				tokenValue, err := parseNumber(word)
 				if err != nil {
-					log.Fatalf("SyntaxError line:%-4v -> %v", lineNumber+1, err)
+					log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
 				}
 				tokens = append(tokens, &Token{lineNumber + 1, Number, tokenValue})
 			} else if word[0] == '-' {
 				if unicode.IsNumber(rune(word[1])) {
 					tokenValue, err := parseNumber(word)
 					if err != nil {
-						log.Fatalf("SyntaxError line:%-4v -> %v", lineNumber+1, err)
+						log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
 					}
 					tokens = append(tokens, &Token{lineNumber + 1, Number, tokenValue})
 				} else if unicode.IsLetter(rune(word[1])) {
 					tokenValue, err := parseIdentifier(word[1:])
 					if err != nil {
-						log.Fatalf("SyntaxError line:%-4v -> %v", lineNumber+1, err)
+						log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
 					}
 					tokens = append(tokens, &Token{lineNumber + 1, Symbol, "-"})
 					tokens = append(tokens, &Token{lineNumber + 1, Identifier, tokenValue})
@@ -188,7 +191,7 @@ func ParseToken(code string) []*Token {
 			} else if word[0] == '"' {
 				tokenValue, err := parseString(word)
 				if err != nil {
-					log.Fatalf("SyntaxError line:%-4v -> %v", lineNumber+1, err)
+					log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
 				}
 				tokens = append(tokens, &Token{lineNumber + 1, String, tokenValue})
 			}

@@ -2,6 +2,8 @@ package ast
 
 import (
 	"fmt"
+	"log"
+	"stone/env"
 	"stone/lexer"
 )
 
@@ -15,6 +17,10 @@ func NewNumberLiteral(token *lexer.Token) *NumberLiteral {
 	return nl
 }
 
+func (l *NumberLiteral) Eval(env env.Env) any {
+	return l.Token.GetValue()
+}
+
 type IdentifierLiteral struct {
 	ASTLeaf
 }
@@ -25,6 +31,18 @@ func NewIdentifierLiteral(token *lexer.Token) *IdentifierLiteral {
 	return nl
 }
 
+func (l *IdentifierLiteral) Eval(env env.Env) any {
+	v, err := env.Get(l.Token.GetValue().(string))
+	if err != nil {
+		log.Fatalf("ReferenceError line %4v: %v %v", l.LineNumber(), l.Token.GetValue().(string), "变量未定义")
+	}
+	return v
+}
+
+func (l *IdentifierLiteral) IsName() bool {
+	return true
+}
+
 type StringLiteral struct {
 	ASTLeaf
 }
@@ -33,6 +51,10 @@ func NewStringLiteral(token *lexer.Token) *StringLiteral {
 	nl := &StringLiteral{}
 	nl.Token = token
 	return nl
+}
+
+func (sl *StringLiteral) Eval(env env.Env) any {
+	return sl.Token.GetValue().(string)
 }
 
 func (sl *StringLiteral) String() string {
@@ -47,4 +69,8 @@ func NewBooleanLiteral(token *lexer.Token) *BooleanLiteral {
 	nl := &BooleanLiteral{}
 	nl.Token = token
 	return nl
+}
+
+func (bl *BooleanLiteral) Eval(env env.Env) any {
+	return bl.Token.GetValue().(bool)
 }

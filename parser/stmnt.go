@@ -15,8 +15,12 @@ import (
 
 func simpleParser() ast.ASTNode {
 	var simple ast.ASTNode
-
+	// var args ast.ASTNode
 	simple = exprParser()
+	// args = argsParser()
+	// if args == nil {
+	// 	return simple
+	// }
 
 	return simple
 }
@@ -40,11 +44,11 @@ func blockParser() ast.ASTNode {
 		}
 		skipEOL()
 		if !tokenUtils.isToken("}", lexer.Symbol) {
-			log.Fatalln("line:", tokenUtils.token().GetLineNumber(), "缺少}")
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少}")
 		}
 		tokenUtils.next()
 	} else {
-		log.Fatalln("line:", tokenUtils.token().GetLineNumber(), "缺少{")
+		log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少{")
 	}
 	left = ast.NewBlockStmnt(blocks)
 	return left
@@ -57,19 +61,20 @@ func statementParser() ast.ASTNode {
 	var thenBlock ast.ASTNode
 	var elseBlock ast.ASTNode
 	var elif []ast.ASTNode
-
-	if tokenUtils.isToken("if", lexer.Symbol) {
+	if tokenUtils.isType(lexer.EOF) {
+		return nil
+	} else if tokenUtils.isToken("if", lexer.Symbol) {
 		tokenUtils.next()
 		ifCond = exprParser()
 		if ifCond == nil {
-			log.Fatalln("line:", tokenUtils.token().GetLineNumber(), "缺少条件")
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
 		}
 		thenBlock = blockParser()
 		for tokenUtils.isToken("elif", lexer.Symbol) {
 			tokenUtils.next()
 			left = exprParser()
 			if left == nil {
-				log.Fatalln("line:", tokenUtils.token().GetLineNumber(), "缺少条件")
+				log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
 			}
 			elif = append(elif, left)
 			left = blockParser()
@@ -79,24 +84,28 @@ func statementParser() ast.ASTNode {
 			tokenUtils.next()
 			elseBlock = blockParser()
 		} else {
-			elseBlock = ast.NewBlockStmnt([]ast.ASTNode{})
+			elseBlock = nil
 		}
 		left = ast.NewIfStmnt(ifCond, thenBlock, elseBlock, elif)
 	} else if tokenUtils.isToken("while", lexer.Symbol) {
 		tokenUtils.next()
 		ifCond = exprParser()
 		if ifCond == nil {
-			log.Fatalln("line:", tokenUtils.token().GetLineNumber(), "缺少条件")
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
 		}
 		thenBlock = blockParser()
 		left = ast.NewWhileStmnt(ifCond, thenBlock)
 	} else if tokenUtils.isToken("return", lexer.Symbol) {
 		tokenUtils.next()
-		thenBlock = exprParser()
-		if thenBlock != nil {
-			left = ast.NewReturnExpr(thenBlock)
-		} else {
+		if tokenUtils.isType(lexer.EOL) {
 			left = ast.NewReturnExpr(nil)
+		} else {
+			thenBlock = exprParser()
+			if thenBlock != nil {
+				left = ast.NewReturnExpr(thenBlock)
+			} else {
+				left = ast.NewReturnExpr(nil)
+			}
 		}
 	} else {
 		left = simpleParser()
