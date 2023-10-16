@@ -4,6 +4,8 @@ import (
 	"log"
 	"stone/ast"
 	"stone/lexer"
+
+	"golang.org/x/exp/slices"
 )
 
 // args      : expr { "," expr }
@@ -82,7 +84,17 @@ func postfixParser() ast.ASTNode {
 func primaryParser() ast.ASTNode {
 	var left ast.ASTNode
 	var postfix ast.ASTNode
-	if tokenUtils.isToken("(", lexer.Symbol) {
+	var param_list ast.ASTNode
+	var block ast.ASTNode
+	if tokenUtils.isType(lexer.Identifier) && slices.Contains(ast.Native, tokenUtils.token().GetValue().(string)) {
+		left = ast.NewNativeFunction(tokenUtils.token())
+	} else if tokenUtils.isToken("fun", lexer.Symbol) {
+		name := ast.NewStringLiteral(tokenUtils.token())
+		tokenUtils.next()
+		param_list = paramListParser()
+		block = blockParser()
+		left = ast.NewFunction(name, param_list, block, nil, true)
+	} else if tokenUtils.isToken("(", lexer.Symbol) {
 		tokenUtils.next()
 		left = exprParser()
 		if !tokenUtils.isToken(")", lexer.Symbol) {

@@ -15,6 +15,11 @@ type GlobalEnv struct {
 	VarMap map[string]any
 }
 
+func NewGlobalEnv() *GlobalEnv {
+	ge := &GlobalEnv{VarMap: make(map[string]any)}
+	return ge
+}
+
 func (ge *GlobalEnv) Get(name string) (any, error) {
 	value, ok := ge.VarMap[name]
 	if !ok {

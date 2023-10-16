@@ -318,12 +318,16 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 		return pe.Children[0].Eval(env)
 	}
 	res := pe.EvalSub(env, k-1)
+	p_values, _ := pe.Children[k].Eval(env).([]any)
+	nfun, ok := res.(*NativeFunction)
+	if ok {
+		return nfun.EvalFunction(p_values)
+	}
 	fun, ok := res.(*Function)
 	if !ok {
 		log.Fatalf("TypeError line %4v: %T %v", pe.LineNumber(), res, "不可调用")
 	}
 	p_names, _ := fun.Params().Eval(env).([]string)
-	p_values, _ := pe.Children[k].Eval(env).([]any)
 	if len(p_names) != len(p_values) {
 		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", pe.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
 	}
@@ -331,5 +335,5 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 	for i := 0; i < len(p_names); i++ {
 		params[p_names[i]] = p_values[i]
 	}
-	return fun.Eval(env, params)
+	return fun.EvalFunction(env, params)
 }

@@ -21,8 +21,9 @@ func main() {
 	nodes := parser.Parser(tokens)
 	env := &env.GlobalEnv{VarMap: make(map[string]any)}
 	for _, node := range nodes {
-		fmt.Println(node)
-		fmt.Printf("%T\n", node)
-		utils.PrintResult(node.Eval(env))
+		// fmt.Println(node)
+		// fmt.Printf("%T\n", node)
+		// utils.PrintResult(node.Eval(env))
+		node.Eval(env)
 	}
 }

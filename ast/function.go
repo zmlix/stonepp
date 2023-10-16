@@ -114,15 +114,21 @@ func (p *ParamList) Eval(env env.Env) any {
 }
 
 type Function struct {
-	name   string
+	ASTLeaf
+	name   ASTNode
 	params ASTNode
 	body   ASTNode
 	env    env.Env
+	isFun  bool
 }
 
-func NewFunction(name string, params ASTNode, body ASTNode, env env.Env) *Function {
-	f := &Function{name: name, params: params, body: body, env: env}
+func NewFunction(name ASTNode, params ASTNode, body ASTNode, env env.Env, isFun bool) *Function {
+	f := &Function{name: name, params: params, body: body, env: env, isFun: isFun}
 	return f
+}
+
+func (f *Function) LineNumber() int {
+	return f.name.Value().GetLineNumber()
 }
 
 func (f *Function) Params() ASTNode {
@@ -138,10 +144,24 @@ func (f *Function) MakeEnv(env_ env.Env) env.Env {
 }
 
 func (f *Function) String() string {
-	return fmt.Sprintf("<function: %v>", f.name)
+	if f.isFun {
+		return fmt.Sprintf("(fun %v %v)", f.params, f.body)
+	}
+	return fmt.Sprintf("<function: %v>", f.name.Value().GetValue().(string))
 }
 
-func (f *Function) Eval(env_ env.Env, params map[string]any) any {
+func (f *Function) EvalFunction(env_ env.Env, params map[string]any) any {
+	if f.isFun {
+		for k, v := range params {
+			f.env.Set(k, v)
+		}
+		res := f.body.Eval(f.env)
+		r, ok := res.(*ReturnValue)
+		if ok {
+			return r.Value
+		}
+		return res
+	}
 	new_env := f.MakeEnv(env_)
 	for k, v := range params {
 		new_env.Set(k, v)
@@ -152,4 +172,11 @@ func (f *Function) Eval(env_ env.Env, params map[string]any) any {
 		return r.Value
 	}
 	return res
+}
+
+func (f *Function) Eval(env env.Env) any {
+	if f.isFun {
+		return NewFunction(nil, f.params, f.body, env, true)
+	}
+	return nil
 }

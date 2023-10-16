@@ -215,7 +215,7 @@ func (ds *DefStmnt) String() string {
 }
 
 func (ds *DefStmnt) Eval(env env.Env) any {
-	function := NewFunction(ds.Name(), ds.ParamList(), ds.Block(), env)
+	function := NewFunction(ds.Children[0], ds.ParamList(), ds.Block(), env, false)
 	env.Set(ds.Name(), function)
 	return nil
 }
