@@ -16,16 +16,14 @@ func deleteComment(code_ string) string {
 			code += string(code_[i])
 		}
 	}
-	// code += "\n"
 	return code
 }
 
 func format(code_ string) string {
 	var code string = ""
-
 	isString := false
+
 	for i := 0; i < len(code_); i++ {
-		// fmt.Println(isString, i, string(code_[i]), slices.Contains(symbols, string(code_[i])))
 		if code_[i] == '"' {
 			if isString && i-1 >= 0 && code_[i-1] != '\\' {
 				isString = false

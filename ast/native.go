@@ -85,7 +85,7 @@ func (nf *NativeFunction) Float(params []any) float64 {
 		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", nf.LineNumber(), "参数数量不匹配", 1, len(params))
 	}
 	var value float64
-	_, err := fmt.Sscanf(params[0].(string), "%f", &value)
+	_, err := fmt.Sscanf(fmt.Sprintf("%v", params[0]), "%f", &value)
 	if err != nil {
 		log.Fatalf("TypeError line %4v: %T %v", nf.LineNumber(), params[0], "不可转换成整数")
 	}

@@ -148,7 +148,7 @@ func ParseToken(code string) []*Token {
 	for lineNumber, line := range lines {
 		words = append(words, splitWord(lineNumber, line))
 	}
-	fmt.Printf("words: %d, %q\n", len(words), words)
+	// fmt.Printf("words: %d, %q\n", len(words), words)
 
 	var tokens []*Token
 	for lineNumber, line := range words {

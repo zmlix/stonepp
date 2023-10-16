@@ -61,9 +61,9 @@ func programParser() ast.ASTNode {
 }
 
 func Parser(tokens []*lexer.Token) []ast.ASTNode {
-	for _, token := range tokens {
-		token.Print()
-	}
+	// for _, token := range tokens {
+	// 	token.Print()
+	// }
 	tokenUtils = &TokenUtils{tokens, 0}
 
 	var astNodes []ast.ASTNode

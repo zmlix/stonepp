@@ -14,14 +14,28 @@ import (
 //           | "return" [ expr ]
 
 func simpleParser() ast.ASTNode {
+	var returnExpr ast.ASTNode
 	var simple ast.ASTNode
 	// var args ast.ASTNode
-	simple = exprParser()
 	// args = argsParser()
 	// if args == nil {
 	// 	return simple
 	// }
-
+	if tokenUtils.isToken("return", lexer.Symbol) {
+		tokenUtils.next()
+		if tokenUtils.isType(lexer.EOL) {
+			simple = ast.NewReturnExpr(nil)
+		} else {
+			returnExpr = exprParser()
+			if returnExpr != nil {
+				simple = ast.NewReturnExpr(returnExpr)
+			} else {
+				simple = ast.NewReturnExpr(nil)
+			}
+		}
+	} else {
+		simple = exprParser()
+	}
 	return simple
 }
 
@@ -33,7 +47,7 @@ func blockParser() ast.ASTNode {
 		left = statementParser()
 		if left != nil {
 			blocks = append(blocks, left)
-			for tokenUtils.isType(lexer.EOL) {
+			for {
 				left = statementParser()
 				if left != nil {
 					blocks = append(blocks, left)
@@ -95,18 +109,6 @@ func statementParser() ast.ASTNode {
 		}
 		thenBlock = blockParser()
 		left = ast.NewWhileStmnt(ifCond, thenBlock)
-	} else if tokenUtils.isToken("return", lexer.Symbol) {
-		tokenUtils.next()
-		if tokenUtils.isType(lexer.EOL) {
-			left = ast.NewReturnExpr(nil)
-		} else {
-			thenBlock = exprParser()
-			if thenBlock != nil {
-				left = ast.NewReturnExpr(thenBlock)
-			} else {
-				left = ast.NewReturnExpr(nil)
-			}
-		}
 	} else {
 		left = simpleParser()
 	}
