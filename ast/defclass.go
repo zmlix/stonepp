@@ -70,7 +70,7 @@ func (d *Dot) Name() string {
 }
 
 func (d *Dot) String() string {
-	return fmt.Sprintf(".%v", d.Method())
+	return fmt.Sprintf(".%v", d.Name())
 }
 
 func (d *Dot) Eval(env env.Env) any {
@@ -81,6 +81,7 @@ func (d *Dot) Eval(env env.Env) any {
 	switch m := method.(type) {
 	case *Function:
 		m.ftype = Method
+		m.env = env
 		return m
 	default:
 		return m
@@ -148,7 +149,7 @@ func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) 
 		for i := 0; i < len(p_names); i++ {
 			params[p_names[i]] = p_values[i]
 		}
-		cc.ftype = Method
+		cc.ftype = Func
 		cc.EvalFunction(obj.env, params)
 		return obj
 	case *Function:
@@ -162,7 +163,7 @@ func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) 
 		for i := 0; i < len(p_names); i++ {
 			params[p_names[i]] = p_values[i]
 		}
-		c.ftype = Method
+		c.ftype = Func
 		c.EvalFunction(obj.env, params)
 		return obj
 	default:

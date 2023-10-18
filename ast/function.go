@@ -183,7 +183,7 @@ func (f *Function) EvalFunction(env_ env.Env, params map[string]any) any {
 	case Lambda:
 		new_env = f.env
 	case Method:
-		new_env = f.MakeEnv(env_)
+		new_env = f.MakeEnv(f.env)
 	}
 
 	for k, v := range params {

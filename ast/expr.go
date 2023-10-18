@@ -276,7 +276,7 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 		}
 	}
 
-	log.Fatalf("TypeError line %4v: %v %v 不能使用\"%v\"运算符\n", be.LineNumber(), leftType, rightType, op)
+	log.Fatalf("TypeError line %4v: 类型 %v 和 %v 不能使用\"%v\"运算符\n", be.LineNumber(), leftType, rightType, op)
 	return nil
 }
 
