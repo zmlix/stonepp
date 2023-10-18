@@ -74,6 +74,15 @@ func postfixParser() ast.ASTNode {
 		if left == nil {
 			left = ast.NewPostfix([]ast.ASTNode{})
 		}
+	} else if tokenUtils.isToken(".", lexer.Symbol) {
+		tokenUtils.next()
+		if tokenUtils.isType(lexer.Identifier) {
+			left = ast.NewStringLiteral(tokenUtils.token())
+			left = ast.NewDot(left)
+			tokenUtils.next()
+		} else {
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少调用方法")
+		}
 	} else {
 		return nil
 	}
@@ -89,11 +98,10 @@ func primaryParser() ast.ASTNode {
 	if tokenUtils.isType(lexer.Identifier) && slices.Contains(ast.Native, tokenUtils.token().GetValue().(string)) {
 		left = ast.NewNativeFunction(tokenUtils.token())
 	} else if tokenUtils.isToken("fun", lexer.Symbol) {
-		// name := ast.NewStringLiteral(tokenUtils.token())
 		tokenUtils.next()
 		param_list = paramListParser()
 		block = blockParser()
-		left = ast.NewFunction(nil, param_list, block, nil, true)
+		left = ast.NewFunction(nil, param_list, block, nil, ast.Func)
 	} else if tokenUtils.isToken("(", lexer.Symbol) {
 		tokenUtils.next()
 		left = exprParser()

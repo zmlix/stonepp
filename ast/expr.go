@@ -41,13 +41,36 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 	}
 	op := be.Op().GetValue().(string)
 	if op == "=" {
-		if !be.Left().IsName() {
-			log.Fatalf("TypeError line %4v: %v 不可被赋值", be.LineNumber(), be.Left())
+		if be.Left().IsVar() {
+			left := be.Left()
+			right := be.Right().Eval(env)
+			env.Set(fmt.Sprintf("%v", left), right)
+			return right
 		}
-		left := be.Left()
-		right := be.Right().Eval(env)
-		env.Set(fmt.Sprintf("%v", left), right)
-		return right
+		postfixLen := len(be.Left().(*PrimaryExpr).Postfix())
+		if postfixLen > 0 {
+			right := be.Right().Eval(env)
+			res := be.Left().ChildrenList()[0].Eval(env)
+			for i := 0; i < postfixLen; i++ {
+				left := be.Left().(*PrimaryExpr).Postfix()
+				dot, ok := left[i].Eval(env).(*Dot)
+				if ok {
+					switch r := res.(type) {
+					case *ClassObject:
+						if i == postfixLen-1 {
+							r.env.Set(dot.Name(), right)
+							return right
+						} else {
+							v, _ := r.env.Get(dot.Name())
+							res = v
+						}
+					default:
+						log.Fatalf("TypeError line %4v: \"%v\" 不可访问", be.LineNumber(), dot.Name())
+					}
+				}
+			}
+		}
+		log.Fatalf("TypeError line %4v: %v 不可被赋值", be.LineNumber(), be.Left())
 	}
 
 	typeAssert := func(value any) string {
@@ -318,22 +341,39 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 		return pe.Children[0].Eval(env)
 	}
 	res := pe.EvalSub(env, k-1)
-	p_values, _ := pe.Children[k].Eval(env).([]any)
+
+	classObj, ok := res.(*ClassObject)
+	if ok {
+		dot := pe.Children[k].Eval(env)
+		method, _ := dot.(*Dot)
+		return method.Eval(classObj.env)
+	}
+
+	classInfo, ok := res.(*ClassInfo)
+	if ok {
+		p_values, _ := pe.Children[k].Eval(env).([]any)
+		return classInfo.EvalConstructor(env, p_values, pe)
+	}
+
 	nfun, ok := res.(*NativeFunction)
 	if ok {
+		p_values, _ := pe.Children[k].Eval(env).([]any)
 		return nfun.EvalFunction(p_values)
 	}
+
 	fun, ok := res.(*Function)
-	if !ok {
-		log.Fatalf("TypeError line %4v: %T %v", pe.LineNumber(), res, "不可调用")
+	if ok {
+		p_values, _ := pe.Children[k].Eval(env).([]any)
+		p_names, _ := fun.Params().Eval(env).([]string)
+		if len(p_names) != len(p_values) {
+			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", pe.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
+		}
+		params := make(map[string]any)
+		for i := 0; i < len(p_names); i++ {
+			params[p_names[i]] = p_values[i]
+		}
+		return fun.EvalFunction(env, params)
 	}
-	p_names, _ := fun.Params().Eval(env).([]string)
-	if len(p_names) != len(p_values) {
-		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", pe.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
-	}
-	params := make(map[string]any)
-	for i := 0; i < len(p_names); i++ {
-		params[p_names[i]] = p_values[i]
-	}
-	return fun.EvalFunction(env, params)
+	log.Fatalf("TypeError line %4v: %T %v", pe.LineNumber(), res, "不可调用")
+	return nil
 }

@@ -14,7 +14,6 @@ type TokenUtils struct {
 }
 
 func (tu *TokenUtils) isToken(value any, tokenType lexer.TokenType) bool {
-	// fmt.Println(tu.pos, tu.tokens[tu.pos])
 	return tu.tokens[tu.pos].GetValue() == value && tu.tokens[tu.pos].GetType() == tokenType
 }
 
@@ -57,13 +56,20 @@ func programParser() ast.ASTNode {
 		return left
 	}
 	left = statementParser()
-	return left
+	if left != nil {
+		return left
+	}
+	left = defclassParser()
+	if left != nil {
+		return left
+	}
+	return nil
 }
 
 func Parser(tokens []*lexer.Token) []ast.ASTNode {
-	// for _, token := range tokens {
-	// 	token.Print()
-	// }
+	for _, token := range tokens {
+		token.Print()
+	}
 	tokenUtils = &TokenUtils{tokens, 0}
 
 	var astNodes []ast.ASTNode

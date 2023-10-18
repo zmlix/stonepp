@@ -39,7 +39,7 @@ func (l *IdentifierLiteral) Eval(env env.Env) any {
 	return v
 }
 
-func (l *IdentifierLiteral) IsName() bool {
+func (l *IdentifierLiteral) IsVar() bool {
 	return true
 }
 

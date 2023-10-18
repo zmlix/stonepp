@@ -59,21 +59,39 @@ func NewDefEnv(fa Env) *DefEnv {
 
 func (de *DefEnv) Get(name string) (any, error) {
 	value, ok := de.VarMap[name]
-	if !ok {
+	if !ok && de.Father() != nil {
 		return de.Father().Get(name)
 	}
 	return value, nil
 }
 
 func (de *DefEnv) Set(name string, value any) {
-	if _, ok := de.Father().(*GlobalEnv); ok {
-		if _, ok2 := de.VarMap[name]; ok2 {
-			de.VarMap[name] = value
-		} else {
-			de.Father().Set(name, value)
+	_, ok := de.VarMap[name]
+	if ok {
+		de.VarMap[name] = value
+	} else {
+		var env Env
+		env = de
+		for env.Father() != nil {
+			env = env.Father()
+			switch env.(type) {
+			case *GlobalEnv:
+				if env.Has(name) {
+					env.Set(name, value)
+				} else {
+					de.VarMap[name] = value
+				}
+				return
+			case *DefClassEnv:
+				if env.Has(name) {
+					env.Set(name, value)
+				} else {
+					de.VarMap[name] = value
+				}
+				return
+			}
 		}
 	}
-	de.VarMap[name] = value
 }
 
 func (de *DefEnv) Father() Env {
@@ -82,5 +100,24 @@ func (de *DefEnv) Father() Env {
 
 func (de *DefEnv) Has(name string) bool {
 	_, ok := de.VarMap[name]
-	return ok || de.Father().Has(name)
+	return ok || (de.Father() != nil && de.Father().Has(name))
+}
+
+type DefClassEnv struct {
+	DefEnv
+}
+
+func NewDefClassEnv(fa Env) *DefClassEnv {
+	dce := &DefClassEnv{}
+	dce.FatherEnv = fa
+	dce.VarMap = make(map[string]any)
+	return dce
+}
+
+func (dce *DefClassEnv) Get(name string) (any, error) {
+	value, ok := dce.VarMap[name]
+	if !ok && dce.Father() != nil {
+		return dce.Father().Get(name)
+	}
+	return value, nil
 }

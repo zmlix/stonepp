@@ -5,6 +5,14 @@ import (
 	"stone/env"
 )
 
+type FunctionType int
+
+const (
+	Func FunctionType = iota
+	Lambda
+	Method
+)
+
 type Postfix struct {
 	ASTList
 }
@@ -19,13 +27,24 @@ func (p *Postfix) String() string {
 	if len(p.Children) == 0 {
 		return "()"
 	}
-	s := fmt.Sprintf("(%v)", p.Children[0])
+	s := fmt.Sprintf("%v", p.Children[0])
 	return s
+}
+
+func (p *Postfix) Dot() ASTNode {
+	dot, ok := p.Children[0].(*Dot)
+	if ok {
+		return dot
+	}
+	return nil
 }
 
 func (p *Postfix) Eval(env env.Env) any {
 	if len(p.Children) == 0 {
 		return []any{}
+	}
+	if p.Dot() != nil {
+		return p.Dot()
 	}
 	return p.Children[0].Eval(env)
 }
@@ -119,11 +138,11 @@ type Function struct {
 	params ASTNode
 	body   ASTNode
 	env    env.Env
-	isFun  bool
+	ftype  FunctionType
 }
 
-func NewFunction(name ASTNode, params ASTNode, body ASTNode, env env.Env, isFun bool) *Function {
-	f := &Function{name: name, params: params, body: body, env: env, isFun: isFun}
+func NewFunction(name ASTNode, params ASTNode, body ASTNode, env env.Env, ftype FunctionType) *Function {
+	f := &Function{name: name, params: params, body: body, env: env, ftype: ftype}
 	return f
 }
 
@@ -144,25 +163,29 @@ func (f *Function) MakeEnv(env_ env.Env) env.Env {
 }
 
 func (f *Function) String() string {
-	if f.isFun {
-		return fmt.Sprintf("(fun %v %v)", f.params, f.body)
+	switch f.ftype {
+	case Func:
+		return fmt.Sprintf("<function: %v>", f.name.Value().GetValue().(string))
+	case Lambda:
+		return fmt.Sprintf("<fun: %v %v>", f.params, f.body)
+	case Method:
+		return fmt.Sprintf("<method: %v %v>", f.params, f.body)
+	default:
+		return fmt.Sprintf("<unkown: %T>", f)
 	}
-	return fmt.Sprintf("<function: %v>", f.name.Value().GetValue().(string))
 }
 
 func (f *Function) EvalFunction(env_ env.Env, params map[string]any) any {
-	if f.isFun {
-		for k, v := range params {
-			f.env.Set(k, v)
-		}
-		res := f.body.Eval(f.env)
-		r, ok := res.(*ReturnValue)
-		if ok {
-			return r.Value
-		}
-		return res
+	var new_env env.Env
+	switch f.ftype {
+	case Func:
+		new_env = f.MakeEnv(env_)
+	case Lambda:
+		new_env = f.env
+	case Method:
+		new_env = f.MakeEnv(env_)
 	}
-	new_env := f.MakeEnv(env_)
+
 	for k, v := range params {
 		new_env.Set(k, v)
 	}
@@ -175,8 +198,5 @@ func (f *Function) EvalFunction(env_ env.Env, params map[string]any) any {
 }
 
 func (f *Function) Eval(env env.Env) any {
-	if f.isFun {
-		return NewFunction(nil, f.params, f.body, env, true)
-	}
-	return nil
+	return NewFunction(nil, f.params, f.body, env, Lambda)
 }

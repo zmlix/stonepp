@@ -12,7 +12,7 @@ import (
 var symbols = []string{
 	"+", "-", "*", "/", ">", "<", ">=", "<=", "==", "=", "!=", "<<", ">>", "^",
 	"%", "{", "}", "[", "]", "(", ")", "\"", "'", "||", "&&", "|", "&", ",", "!",
-	"if", "elif", "else", "while", "def", "return", "fun"}
+	"if", "elif", "else", "while", "def", "return", "fun", "class", "extends", "."}
 
 func parseNumber(word string) (any, error) {
 

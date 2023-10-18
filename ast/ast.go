@@ -11,7 +11,7 @@ type ASTNode interface {
 	Value() *lexer.Token
 	ChildrenList() []ASTNode
 	Eval(env.Env) any
-	IsName() bool
+	IsVar() bool
 	LineNumber() int
 }
 
@@ -35,7 +35,7 @@ func (ast *ASTLeaf) Eval(env env.Env) any {
 	return ast.Token.GetValue()
 }
 
-func (ast *ASTLeaf) IsName() bool {
+func (ast *ASTLeaf) IsVar() bool {
 	return false
 }
 
@@ -66,8 +66,8 @@ func (ast *ASTList) Eval(env env.Env) any {
 	return res
 }
 
-func (ast *ASTList) IsName() bool {
-	return false || (len(ast.Children) == 1 && ast.Children[0].IsName())
+func (ast *ASTList) IsVar() bool {
+	return false || (len(ast.Children) == 1 && ast.Children[0].IsVar())
 }
 
 func (ast *ASTList) LineNumber() int {
@@ -77,7 +77,7 @@ func (ast *ASTList) LineNumber() int {
 func (ast *ASTList) String() string {
 	s := ""
 	for i := 0; i < len(ast.Children); i++ {
-		s += fmt.Sprintf("%v", ast.Children[i])
+		s += fmt.Sprintf("%v\n", ast.Children[i])
 	}
-	return " " + s + " "
+	return s
 }

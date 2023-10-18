@@ -41,6 +41,21 @@ func (ast *BlockStmnt) Eval(env env.Env) any {
 	return res
 }
 
+func (ast *BlockStmnt) EvalClass(env *env.DefEnv) any {
+	var res any
+	for _, child := range ast.Children {
+		if child == nil {
+			log.Fatalf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
+		}
+		res = child.Eval(env)
+		r, ok := res.(*ReturnValue)
+		if ok {
+			return r
+		}
+	}
+	return res
+}
+
 type IfStmnt struct {
 	ASTList
 }
@@ -215,7 +230,7 @@ func (ds *DefStmnt) String() string {
 }
 
 func (ds *DefStmnt) Eval(env env.Env) any {
-	function := NewFunction(ds.Children[0], ds.ParamList(), ds.Block(), env, false)
+	function := NewFunction(ds.Children[0], ds.ParamList(), ds.Block(), env, Func)
 	env.Set(ds.Name(), function)
 	return nil
 }
