@@ -109,6 +109,11 @@ func (ci *ClassInfo) LineNumber() int {
 	return ci.name.LineNumber()
 }
 
+func (ci *ClassInfo) HasConstructor() bool {
+	_, ok := ci.env.(*env.DefClassEnv).VarMap[fmt.Sprintf("%v", ci.name)]
+	return ok
+}
+
 func (ci *ClassInfo) String() string {
 	return fmt.Sprintf("<class: %v>", ci.name)
 }
@@ -122,13 +127,12 @@ func (ci *ClassInfo) Eval(env_ env.Env) any {
 }
 
 func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) any {
-	constructorName := fmt.Sprintf("%v", ci.name)
-	hasConstructor := ci.env.Has(constructorName)
-	if !hasConstructor {
-		return NewClassObject(ci.name, ci.extends, ci.body, ci.env)
+	if ci.extends != nil {
+		ci.env.(*env.DefClassEnv).VarMap["super"] = ci.extends.Eval(env_).(*ClassInfo)
 	}
+	constructorName := fmt.Sprintf("%v", ci.name)
 	constructor_, _ := ci.env.Get(constructorName)
-
+	var constructor *Function
 	switch c := constructor_.(type) {
 	case *ClassInfo:
 		cc_, err := c.env.Get(constructorName)
@@ -137,39 +141,44 @@ func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) 
 		}
 		cc, ok := cc_.(*Function)
 		if !ok {
+			if ci.extends != nil && ci.extends.Eval(env_).(*ClassInfo).HasConstructor() {
+				log.Fatalf("SyntaxError line %4v: %v 未实现父类 %v 的构造函数", ast.LineNumber(), ci.name, ci.extends)
+			}
+			if len(p_values) != 0 {
+				log.Fatalf("SyntaxError line %4v: %v %v", ast.LineNumber(), ci.name, "不含有参构造函数")
+			}
 			return NewClassObject(ci.name, ci.extends, ci.body, ci.env)
 		}
-		obj := NewClassObject(ci.name, ci.extends, ci.body, ci.env)
-
-		p_names := cc.params.Eval(nil).([]string)
-		if len(p_names) != len(p_values) {
-			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
-		}
-		params := make(map[string]any)
-		for i := 0; i < len(p_names); i++ {
-			params[p_names[i]] = p_values[i]
-		}
-		cc.ftype = Func
-		cc.EvalFunction(obj.env, params)
-		return obj
+		constructor = cc
 	case *Function:
-		obj := NewClassObject(ci.name, ci.extends, ci.body, ci.env)
-
-		p_names := c.params.Eval(nil).([]string)
-		if len(p_names) != len(p_values) {
-			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
-		}
-		params := make(map[string]any)
-		for i := 0; i < len(p_names); i++ {
-			params[p_names[i]] = p_values[i]
-		}
-		c.ftype = Func
-		c.EvalFunction(obj.env, params)
-		return obj
+		constructor = c
 	default:
 		log.Fatalf("TypeError line %4v: %v 类成员 %v 的值为 %v %v", ci.LineNumber(), ci.name, ci.name, constructor_, "不是构造函数")
 	}
-	return nil
+
+	obj := NewClassObject(ci.name, ci.extends, ci.body, ci.env)
+	p_names := constructor.params.Eval(nil).([]string)
+	if len(p_names) != len(p_values) {
+		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
+	}
+	params := make(map[string]any)
+	for i := 0; i < len(p_names); i++ {
+		params[p_names[i]] = p_values[i]
+	}
+	constructor.ftype = Func
+	constructor.EvalFunction(obj.env, params)
+	if ci.extends != nil {
+		switch obj.env.(*env.DefClassEnv).VarMap["super"].(type) {
+		case *ClassObject:
+			superEnv := obj.env.(*env.DefClassEnv).VarMap["super"].(*ClassObject).env
+			superEnv.(*env.DefClassEnv).FatherEnv = env_
+			obj.env.(*env.DefClassEnv).FatherEnv = superEnv
+			return obj
+		default:
+			log.Fatalf("TypeError line %4v: 未对父类 %v 初始化", ci.LineNumber(), ci.extends)
+		}
+	}
+	return obj
 }
 
 type ClassObject struct {
@@ -184,6 +193,10 @@ func NewClassObject(name ASTNode, extends ASTNode, body ASTNode, env_ env.Env) *
 	co := &ClassObject{name: name, extends: extends, body: body, env: env_}
 	co.env = env.NewDefClassEnv(env_.Father())
 	for k, v := range env_.(*env.DefClassEnv).VarMap {
+		if k == fmt.Sprintf("%v", name) {
+			co.env.(*env.DefClassEnv).VarMap[k] = v
+			continue
+		}
 		co.env.Set(k, v)
 	}
 	return co
