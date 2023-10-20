@@ -69,6 +69,8 @@ func (nf *NativeFunction) Len(params []any) int {
 	switch v := params[0].(type) {
 	case string:
 		return len(v)
+	case *Array:
+		return v.Len()
 	default:
 		log.Fatalf("TypeError line %4v: %T %v", nf.LineNumber(), params[0], "不可计算长度")
 	}

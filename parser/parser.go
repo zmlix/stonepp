@@ -34,6 +34,13 @@ func (tu *TokenUtils) token() *lexer.Token {
 	return tu.tokens[tu.pos]
 }
 
+func (tu *TokenUtils) back() {
+	tu.pos--
+	if tu.pos < 0 {
+		log.Fatalln("不可继续回退")
+	}
+}
+
 func (tu *TokenUtils) next() {
 	tu.pos++
 	if tu.pos >= len(tu.tokens) {

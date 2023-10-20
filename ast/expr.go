@@ -342,6 +342,22 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 	}
 	res := pe.EvalSub(env, k-1)
 
+	arrayMethod, ok := res.(*ArrayMethod)
+	if ok {
+		p_values, _ := pe.Children[k].Eval(env).([]any)
+		return arrayMethod.Eval(p_values, pe)
+	}
+
+	array, ok := res.(*Array)
+	if ok {
+		switch v := pe.Children[k].Eval(env).(type) {
+		case *ArrayRef:
+			return v.EvalArrayRef(array)
+		case *Dot:
+			return v.Eval(array.env)
+		}
+	}
+
 	classObj, ok := res.(*ClassObject)
 	if ok {
 		dot := pe.Children[k].Eval(env)

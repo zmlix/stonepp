@@ -8,9 +8,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// elements  : expr { "," expr }
 // args      : expr { "," expr }
-// postfix   : "(" [ args ] ")"
-// primary   : ("(" expr ")" | Number | Identifier | String | Boolean) { postfix }
+// postfix   : "." Identifier | "(" [ args ] ")" | "[" expr "]"
+// primary   : ("fun" param_list block | "[" [ elements ] "]" | "(" expr ")" | Number | Identifier | String | Boolean) { postfix }
 // factor    : {"-"} primary
 // expr      : factor { Op factor}
 
@@ -42,6 +43,26 @@ var operators = map[string]Precedence{
 	"=":  {prec: -11, leftAssoc: false},
 }
 
+func elementsParser() ast.ASTNode {
+	var left ast.ASTNode
+	var elements []ast.ASTNode
+	left = exprParser()
+	if left == nil {
+		return ast.NewElements([]ast.ASTNode{})
+	}
+	elements = append(elements, left)
+	for tokenUtils.isToken(",", lexer.Symbol) {
+		tokenUtils.next()
+		left = exprParser()
+		if left == nil {
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
+		}
+		elements = append(elements, left)
+	}
+	left = ast.NewElements(elements)
+	return left
+}
+
 func argsParser() ast.ASTNode {
 	var left ast.ASTNode
 	var args []ast.ASTNode
@@ -64,7 +85,18 @@ func argsParser() ast.ASTNode {
 
 func postfixParser() ast.ASTNode {
 	var left ast.ASTNode
-	if tokenUtils.isToken("(", lexer.Symbol) {
+	if tokenUtils.isToken("[", lexer.Symbol) {
+		tokenUtils.next()
+		left = exprParser()
+		if left == nil {
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少索引下标")
+		}
+		if !tokenUtils.isToken("]", lexer.Symbol) {
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\"]\"")
+		}
+		tokenUtils.next()
+		left = ast.NewArrayRef(left)
+	} else if tokenUtils.isToken("(", lexer.Symbol) {
 		tokenUtils.next()
 		left = argsParser()
 		if !tokenUtils.isToken(")", lexer.Symbol) {
@@ -101,7 +133,14 @@ func primaryParser() ast.ASTNode {
 		tokenUtils.next()
 		param_list = paramListParser()
 		block = blockParser()
-		left = ast.NewFunction(nil, param_list, block, nil, ast.Func)
+		left = ast.NewFunction(nil, param_list, block, nil, ast.Lambda)
+		tokenUtils.back()
+	} else if tokenUtils.isToken("[", lexer.Symbol) {
+		tokenUtils.next()
+		left = elementsParser()
+		if !tokenUtils.isToken("]", lexer.Symbol) {
+			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\"]\"")
+		}
 	} else if tokenUtils.isToken("(", lexer.Symbol) {
 		tokenUtils.next()
 		left = exprParser()
