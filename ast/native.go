@@ -57,14 +57,14 @@ func (nf *NativeFunction) Read() string {
 	var value string
 	_, err := fmt.Scan(&value)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Panicf("%v", err)
 	}
 	return value
 }
 
 func (nf *NativeFunction) Len(params []any) int {
 	if len(params) > 1 {
-		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", nf.LineNumber(), "参数数量不匹配", 1, len(params))
+		log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", nf.LineNumber(), "参数数量不匹配", 1, len(params))
 	}
 	switch v := params[0].(type) {
 	case string:
@@ -72,7 +72,7 @@ func (nf *NativeFunction) Len(params []any) int {
 	case *Array:
 		return v.Len()
 	default:
-		log.Fatalf("TypeError line %4v: %T %v", nf.LineNumber(), params[0], "不可计算长度")
+		log.Panicf("TypeError line %4v: %T %v", nf.LineNumber(), params[0], "不可计算长度")
 	}
 	return 0
 }
@@ -84,12 +84,12 @@ func (nf *NativeFunction) Int(params []any) int {
 
 func (nf *NativeFunction) Float(params []any) float64 {
 	if len(params) > 1 {
-		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", nf.LineNumber(), "参数数量不匹配", 1, len(params))
+		log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", nf.LineNumber(), "参数数量不匹配", 1, len(params))
 	}
 	var value float64
 	_, err := fmt.Sscanf(fmt.Sprintf("%v", params[0]), "%f", &value)
 	if err != nil {
-		log.Fatalf("TypeError line %4v: %T %v", nf.LineNumber(), params[0], "不可转换成整数")
+		log.Panicf("TypeError line %4v: %T %v", nf.LineNumber(), params[0], "不可转换成整数")
 	}
 	return value
 }

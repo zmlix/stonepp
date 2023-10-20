@@ -34,7 +34,7 @@ func paramsParser() ast.ASTNode {
 		tokenUtils.next()
 		left = paramParser()
 		if left == nil {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
 		}
 		params = append(params, left)
 	}
@@ -48,7 +48,7 @@ func paramListParser() ast.ASTNode {
 		tokenUtils.next()
 		left = paramsParser()
 		if !tokenUtils.isToken(")", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\")\"")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\")\"")
 		}
 		tokenUtils.next()
 		if left == nil {
@@ -73,7 +73,7 @@ func defParser() ast.ASTNode {
 			name = ast.NewIdentifierLiteral(tokenUtils.token())
 			tokenUtils.next()
 		} else {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少函数名")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少函数名")
 		}
 		param_list = paramListParser()
 		block = blockParser()

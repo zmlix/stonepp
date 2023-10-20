@@ -46,7 +46,7 @@ func classBodyParser() ast.ASTNode {
 		}
 		skipEOL()
 		if !tokenUtils.isToken("}", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少}")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少}")
 		}
 		tokenUtils.next()
 	}
@@ -65,7 +65,7 @@ func defclassParser() ast.ASTNode {
 			name = ast.NewIdentifierLiteral(tokenUtils.token())
 			tokenUtils.next()
 		} else {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少类名")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少类名")
 		}
 		if tokenUtils.isToken("extends", lexer.Symbol) {
 			tokenUtils.next()
@@ -73,7 +73,7 @@ func defclassParser() ast.ASTNode {
 				extends = ast.NewIdentifierLiteral(tokenUtils.token())
 				tokenUtils.next()
 			} else {
-				log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少继承的父类名")
+				log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少继承的父类名")
 			}
 		}
 		body = classBodyParser()

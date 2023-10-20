@@ -59,7 +59,7 @@ func (ast *ASTList) Eval(env env.Env) any {
 	var res any
 	for _, child := range ast.Children {
 		if child == nil {
-			log.Fatalf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
+			log.Panicf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
 		}
 		res = child.Eval(env)
 	}

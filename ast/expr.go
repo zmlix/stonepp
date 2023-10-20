@@ -37,7 +37,7 @@ func (be *BinaryExpr) String() string {
 
 func (be *BinaryExpr) Eval(env env.Env) any {
 	if be == nil || be.Op() == nil || be.Left() == nil || be.Right() == nil {
-		log.Fatalf("SyntaxError line %4v: %s", be.LineNumber(), "语法错误")
+		log.Panicf("SyntaxError line %4v: %s", be.LineNumber(), "语法错误")
 	}
 	op := be.Op().GetValue().(string)
 	if op == "=" {
@@ -65,12 +65,12 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 							res = v
 						}
 					default:
-						log.Fatalf("TypeError line %4v: \"%v\" 不可访问", be.LineNumber(), dot.Name())
+						log.Panicf("TypeError line %4v: \"%v\" 不可访问", be.LineNumber(), dot.Name())
 					}
 				}
 			}
 		}
-		log.Fatalf("TypeError line %4v: %v 不可被赋值", be.LineNumber(), be.Left())
+		log.Panicf("TypeError line %4v: %v 不可被赋值", be.LineNumber(), be.Left())
 	}
 
 	typeAssert := func(value any) string {
@@ -276,7 +276,7 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 		}
 	}
 
-	log.Fatalf("TypeError line %4v: 类型 %v 和 %v 不能使用\"%v\"运算符\n", be.LineNumber(), leftType, rightType, op)
+	log.Panicf("TypeError line %4v: 类型 %v 和 %v 不能使用\"%v\"运算符\n", be.LineNumber(), leftType, rightType, op)
 	return nil
 }
 
@@ -302,7 +302,7 @@ func (ne *NegativeExpr) Eval(env env.Env) any {
 	case float64:
 		return -r
 	default:
-		log.Fatalf("TypeError line %4v: %T 类型不能使用\"-\"运算符\n", ne.LineNumber(), r)
+		log.Panicf("TypeError line %4v: %T 类型不能使用\"-\"运算符\n", ne.LineNumber(), r)
 	}
 	return nil
 }
@@ -382,7 +382,7 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 		p_values, _ := pe.Children[k].Eval(env).([]any)
 		p_names, _ := fun.Params().Eval(env).([]string)
 		if len(p_names) != len(p_values) {
-			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", pe.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
+			log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", pe.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
 		}
 		params := make(map[string]any)
 		for i := 0; i < len(p_names); i++ {
@@ -390,6 +390,6 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 		}
 		return fun.EvalFunction(env, params)
 	}
-	log.Fatalf("TypeError line %4v: %T %v", pe.LineNumber(), res, "不可调用")
+	log.Panicf("TypeError line %4v: %T %v", pe.LineNumber(), res, "不可调用")
 	return nil
 }

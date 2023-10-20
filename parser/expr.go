@@ -55,7 +55,7 @@ func elementsParser() ast.ASTNode {
 		tokenUtils.next()
 		left = exprParser()
 		if left == nil {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
 		}
 		elements = append(elements, left)
 	}
@@ -75,7 +75,7 @@ func argsParser() ast.ASTNode {
 		tokenUtils.next()
 		left = exprParser()
 		if left == nil {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "\",\"后缺少参数")
 		}
 		args = append(args, left)
 	}
@@ -89,10 +89,10 @@ func postfixParser() ast.ASTNode {
 		tokenUtils.next()
 		left = exprParser()
 		if left == nil {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少索引下标")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少索引下标")
 		}
 		if !tokenUtils.isToken("]", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\"]\"")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\"]\"")
 		}
 		tokenUtils.next()
 		left = ast.NewArrayRef(left)
@@ -100,7 +100,7 @@ func postfixParser() ast.ASTNode {
 		tokenUtils.next()
 		left = argsParser()
 		if !tokenUtils.isToken(")", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\")\"")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\")\"")
 		}
 		tokenUtils.next()
 		if left == nil {
@@ -113,7 +113,7 @@ func postfixParser() ast.ASTNode {
 			left = ast.NewDot(left)
 			tokenUtils.next()
 		} else {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少调用方法")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少调用方法")
 		}
 	} else {
 		return nil
@@ -139,13 +139,13 @@ func primaryParser() ast.ASTNode {
 		tokenUtils.next()
 		left = elementsParser()
 		if !tokenUtils.isToken("]", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\"]\"")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\"]\"")
 		}
 	} else if tokenUtils.isToken("(", lexer.Symbol) {
 		tokenUtils.next()
 		left = exprParser()
 		if !tokenUtils.isToken(")", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\")\"")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少\")\"")
 		}
 	} else if tokenUtils.isType(lexer.Number) {
 		left = ast.NewNumberLiteral(tokenUtils.token())
@@ -177,7 +177,7 @@ func primaryParser() ast.ASTNode {
 func factorParser() ast.ASTNode {
 	var left ast.ASTNode
 	if tokenUtils.isToken("+", lexer.Symbol) {
-		log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "意外出现的\"+\"")
+		log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "意外出现的\"+\"")
 	}
 	if tokenUtils.isToken("-", lexer.Symbol) {
 		tokenUtils.next()

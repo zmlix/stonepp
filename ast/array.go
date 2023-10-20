@@ -21,7 +21,7 @@ func (ar *ArrayRef) Eval(env env.Env) any {
 	expr := ar.Children[0].Eval(env)
 	idx, ok := expr.(int)
 	if !ok {
-		log.Fatalf("RangeError line %4v: %T %s", ar.LineNumber(), expr, "不合法的索引类型")
+		log.Panicf("RangeError line %4v: %T %s", ar.LineNumber(), expr, "不合法的索引类型")
 	}
 	ar.index = idx
 	return ar
@@ -35,7 +35,7 @@ func (ar *ArrayRef) EvalArrayRef(arr *Array) any {
 	if arr.Has(ar.index) {
 		return arr.Get(ar.index)
 	}
-	log.Fatalf("RangeError line %4v: %s", ar.LineNumber(), "不合法的索引长度")
+	log.Panicf("RangeError line %4v: %s", ar.LineNumber(), "不合法的索引长度")
 	return nil
 }
 
@@ -154,34 +154,34 @@ func (am *ArrayMethod) Eval(params []any, ast ASTNode) any {
 		return am.method.(func() int)()
 	case "append":
 		if len(params) != 1 {
-			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", 1, len(params))
+			log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", 1, len(params))
 		}
 		return am.method.(func(any) int)(params[0])
 	case "insert":
 		if len(params) != 2 {
-			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", 2, len(params))
+			log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", 2, len(params))
 		}
 		if index, ok := params[1].(int); ok {
 			if !am.method.(func(any, int) bool)(params[0], index) {
-				log.Fatalf("RangeError line %4v: %s", ast.LineNumber(), "不合法的索引长度")
+				log.Panicf("RangeError line %4v: %s", ast.LineNumber(), "不合法的索引长度")
 			}
 		} else {
-			log.Fatalf("RangeError line %4v: %T %s", ast.LineNumber(), params[0], "不合法的索引类型")
+			log.Panicf("RangeError line %4v: %T %s", ast.LineNumber(), params[0], "不合法的索引类型")
 		}
 	case "pop":
 		if !am.method.(func() bool)() {
-			log.Fatalf("RangeError line %4v: %s", ast.LineNumber(), "数组为空")
+			log.Panicf("RangeError line %4v: %s", ast.LineNumber(), "数组为空")
 		}
 	case "remove":
 		if len(params) != 1 {
-			log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", 1, len(params))
+			log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", 1, len(params))
 		}
 		if index, ok := params[0].(int); ok {
 			if !am.method.(func(int) bool)(index) {
-				log.Fatalf("RangeError line %4v: %s", ast.LineNumber(), "不合法的索引长度")
+				log.Panicf("RangeError line %4v: %s", ast.LineNumber(), "不合法的索引长度")
 			}
 		} else {
-			log.Fatalf("RangeError line %4v: %T %s", ast.LineNumber(), params[0], "不合法的索引类型")
+			log.Panicf("RangeError line %4v: %T %s", ast.LineNumber(), params[0], "不合法的索引类型")
 		}
 
 	}

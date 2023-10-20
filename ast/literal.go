@@ -34,7 +34,7 @@ func NewIdentifierLiteral(token *lexer.Token) *IdentifierLiteral {
 func (l *IdentifierLiteral) Eval(env env.Env) any {
 	v, err := env.Get(l.Token.GetValue().(string))
 	if err != nil {
-		log.Fatalf("ReferenceError line %4v: %v %v", l.LineNumber(), l.Token.GetValue().(string), "变量未定义")
+		log.Panicf("ReferenceError line %4v: %v %v", l.LineNumber(), l.Token.GetValue().(string), "变量未定义")
 	}
 	return v
 }

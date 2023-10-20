@@ -30,7 +30,7 @@ func (ast *BlockStmnt) Eval(env env.Env) any {
 	var res any
 	for _, child := range ast.Children {
 		if child == nil {
-			log.Fatalf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
+			log.Panicf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
 		}
 		res = child.Eval(env)
 		r, ok := res.(*ReturnValue)
@@ -45,7 +45,7 @@ func (ast *BlockStmnt) EvalClass(env *env.DefEnv) any {
 	var res any
 	for _, child := range ast.Children {
 		if child == nil {
-			log.Fatalf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
+			log.Panicf("SyntaxError line %4v: %s", ast.LineNumber(), "语法错误")
 		}
 		res = child.Eval(env)
 		r, ok := res.(*ReturnValue)
@@ -107,7 +107,7 @@ func (is *IfStmnt) String() string {
 func (is *IfStmnt) Eval(env env.Env) any {
 	cond, ok := is.Cond().Eval(env).(bool)
 	if !ok {
-		log.Fatalf("TypeError line %4v: %s", is.LineNumber(), "条件返回值必须是\"bool\"类型")
+		log.Panicf("TypeError line %4v: %s", is.LineNumber(), "条件返回值必须是\"bool\"类型")
 	}
 	if cond {
 		return is.Then().Eval(env)
@@ -117,7 +117,7 @@ func (is *IfStmnt) Eval(env env.Env) any {
 			elif_cond, elif_then := elif[i], elif[i+1]
 			cond, ok := elif_cond.Eval(env).(bool)
 			if !ok {
-				log.Fatalf("TypeError line %4v: %s", is.LineNumber(), "条件返回值必须是\"bool\"类型")
+				log.Panicf("TypeError line %4v: %s", is.LineNumber(), "条件返回值必须是\"bool\"类型")
 			}
 			if cond {
 				return elif_then.Eval(env)
@@ -158,7 +158,7 @@ func (ws *WhileStmnt) Eval(env env.Env) any {
 	for {
 		cond, ok := ws.Cond().Eval(env).(bool)
 		if !ok {
-			log.Fatalf("TypeError line %4v: %s", ws.LineNumber(), "条件返回值必须是\"bool\"类型")
+			log.Panicf("TypeError line %4v: %s", ws.LineNumber(), "条件返回值必须是\"bool\"类型")
 		}
 		if cond {
 			res = ws.Block().Eval(env)
@@ -199,6 +199,7 @@ func (re *ReturnStmnt) String() string {
 func (re *ReturnStmnt) Eval(env env.Env) any {
 	if re.Empty() {
 		return &ReturnValue{Value: nil}
+		// return nil
 	}
 	return &ReturnValue{re.Res().Eval(env)}
 }

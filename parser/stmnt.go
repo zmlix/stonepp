@@ -58,11 +58,11 @@ func blockParser() ast.ASTNode {
 		}
 		skipEOL()
 		if !tokenUtils.isToken("}", lexer.Symbol) {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少}")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少}")
 		}
 		tokenUtils.next()
 	} else {
-		log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少{")
+		log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少{")
 	}
 	left = ast.NewBlockStmnt(blocks)
 	return left
@@ -81,14 +81,14 @@ func statementParser() ast.ASTNode {
 		tokenUtils.next()
 		ifCond = exprParser()
 		if ifCond == nil {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
 		}
 		thenBlock = blockParser()
 		for tokenUtils.isToken("elif", lexer.Symbol) {
 			tokenUtils.next()
 			left = exprParser()
 			if left == nil {
-				log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
+				log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
 			}
 			elif = append(elif, left)
 			left = blockParser()
@@ -105,7 +105,7 @@ func statementParser() ast.ASTNode {
 		tokenUtils.next()
 		ifCond = exprParser()
 		if ifCond == nil {
-			log.Fatalf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
+			log.Panicf("SyntaxError line %4v: %s", tokenUtils.token().GetLineNumber(), "缺少条件")
 		}
 		thenBlock = blockParser()
 		left = ast.NewWhileStmnt(ifCond, thenBlock)

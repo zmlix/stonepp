@@ -76,7 +76,7 @@ func (d *Dot) String() string {
 func (d *Dot) Eval(env env.Env) any {
 	method, err := env.Get(d.Method().Eval(env).(string))
 	if err != nil {
-		log.Fatalf("SyntaxError line %4v: %v %v", d.LineNumber(), d.Method(), "成员不存在")
+		log.Panicf("SyntaxError line %4v: %v %v", d.LineNumber(), d.Method(), "成员不存在")
 	}
 	switch m := method.(type) {
 	case *Function:
@@ -137,15 +137,15 @@ func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) 
 	case *ClassInfo:
 		cc_, err := c.env.Get(constructorName)
 		if err != nil {
-			log.Fatalf("TypeError line %4v: %v 类成员 %v 的值为 %v %v", ci.LineNumber(), ci.name, ci.name, constructor_, "不是构造函数")
+			log.Panicf("TypeError line %4v: %v 类成员 %v 的值为 %v %v", ci.LineNumber(), ci.name, ci.name, constructor_, "不是构造函数")
 		}
 		cc, ok := cc_.(*Function)
 		if !ok {
 			if ci.extends != nil && ci.extends.Eval(env_).(*ClassInfo).HasConstructor() {
-				log.Fatalf("SyntaxError line %4v: %v 未实现父类 %v 的构造函数", ast.LineNumber(), ci.name, ci.extends)
+				log.Panicf("SyntaxError line %4v: %v 未实现父类 %v 的构造函数", ast.LineNumber(), ci.name, ci.extends)
 			}
 			if len(p_values) != 0 {
-				log.Fatalf("SyntaxError line %4v: %v %v", ast.LineNumber(), ci.name, "不含有参构造函数")
+				log.Panicf("SyntaxError line %4v: %v %v", ast.LineNumber(), ci.name, "不含有参构造函数")
 			}
 			return NewClassObject(ci.name, ci.extends, ci.body, ci.env)
 		}
@@ -153,13 +153,13 @@ func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) 
 	case *Function:
 		constructor = c
 	default:
-		log.Fatalf("TypeError line %4v: %v 类成员 %v 的值为 %v %v", ci.LineNumber(), ci.name, ci.name, constructor_, "不是构造函数")
+		log.Panicf("TypeError line %4v: %v 类成员 %v 的值为 %v %v", ci.LineNumber(), ci.name, ci.name, constructor_, "不是构造函数")
 	}
 
 	obj := NewClassObject(ci.name, ci.extends, ci.body, ci.env)
 	p_names := constructor.params.Eval(nil).([]string)
 	if len(p_names) != len(p_values) {
-		log.Fatalf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
+		log.Panicf("SyntaxError line %4v: %v 期望(%v)个 获得(%v)个", ast.LineNumber(), "参数数量不匹配", len(p_names), len(p_values))
 	}
 	params := make(map[string]any)
 	for i := 0; i < len(p_names); i++ {
@@ -175,7 +175,7 @@ func (ci *ClassInfo) EvalConstructor(env_ env.Env, p_values []any, ast ASTNode) 
 			obj.env.(*env.DefClassEnv).FatherEnv = superEnv
 			return obj
 		default:
-			log.Fatalf("TypeError line %4v: 未对父类 %v 初始化", ci.LineNumber(), ci.extends)
+			log.Panicf("TypeError line %4v: 未对父类 %v 初始化", ci.LineNumber(), ci.extends)
 		}
 	}
 	return obj

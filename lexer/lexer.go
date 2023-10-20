@@ -123,7 +123,7 @@ func splitWord(lineNumber int, line string) []string {
 
 		if line[i] == ' ' && word != "" {
 			if isString {
-				log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, "未闭合的字符串")
+				log.Panicf("SyntaxError line %4v: %v", lineNumber+1, "未闭合的字符串")
 			}
 			words = append(words, word)
 			word = ""
@@ -135,7 +135,7 @@ func splitWord(lineNumber int, line string) []string {
 	}
 	if word != "" {
 		if isString {
-			log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, "未闭合的字符串")
+			log.Panicf("SyntaxError line %4v: %v", lineNumber+1, "未闭合的字符串")
 		}
 		words = append(words, word)
 	}
@@ -164,26 +164,26 @@ func ParseToken(code string) []*Token {
 			} else if word[0] == '_' || unicode.IsLetter(rune(word[0])) {
 				tokenValue, err := parseIdentifier(word)
 				if err != nil {
-					log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
+					log.Panicf("SyntaxError line %4v: %v", lineNumber+1, err)
 				}
 				tokens = append(tokens, &Token{lineNumber + 1, Identifier, tokenValue})
 			} else if unicode.IsNumber(rune(word[0])) {
 				tokenValue, err := parseNumber(word)
 				if err != nil {
-					log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
+					log.Panicf("SyntaxError line %4v: %v", lineNumber+1, err)
 				}
 				tokens = append(tokens, &Token{lineNumber + 1, Number, tokenValue})
 			} else if word[0] == '-' {
 				if unicode.IsNumber(rune(word[1])) {
 					tokenValue, err := parseNumber(word)
 					if err != nil {
-						log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
+						log.Panicf("SyntaxError line %4v: %v", lineNumber+1, err)
 					}
 					tokens = append(tokens, &Token{lineNumber + 1, Number, tokenValue})
 				} else if unicode.IsLetter(rune(word[1])) {
 					tokenValue, err := parseIdentifier(word[1:])
 					if err != nil {
-						log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
+						log.Panicf("SyntaxError line %4v: %v", lineNumber+1, err)
 					}
 					tokens = append(tokens, &Token{lineNumber + 1, Symbol, "-"})
 					tokens = append(tokens, &Token{lineNumber + 1, Identifier, tokenValue})
@@ -191,7 +191,7 @@ func ParseToken(code string) []*Token {
 			} else if word[0] == '"' {
 				tokenValue, err := parseString(word)
 				if err != nil {
-					log.Fatalf("SyntaxError line %4v: %v", lineNumber+1, err)
+					log.Panicf("SyntaxError line %4v: %v", lineNumber+1, err)
 				}
 				tokens = append(tokens, &Token{lineNumber + 1, String, tokenValue})
 			}
