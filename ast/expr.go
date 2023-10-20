@@ -75,6 +75,8 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 					case *Array:
 						ref.EvalArrayRefModify(r, right)
 						return right
+					case string:
+						log.Panicf("TypeError line %4v: %T 类型不可修改", be.LineNumber(), res)
 					default:
 						log.Panicf("TypeError line %4v: %T 类型不可索引访问", be.LineNumber(), res)
 					}
