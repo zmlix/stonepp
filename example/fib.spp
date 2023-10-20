@@ -1,0 +1,14 @@
+//记忆化搜索
+fibList = [1,1]
+
+def fib(n){
+    if n < len(fibList) {
+        return fibList[n]
+    }
+    f = fib(n-1)+fib(n-2)
+    fibList.append(f)
+    return f
+}
+
+fib(10)
+println(fibList)

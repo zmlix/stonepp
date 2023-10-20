@@ -1,4 +1,4 @@
-module stone
+module stonepp
 
 go 1.18
 

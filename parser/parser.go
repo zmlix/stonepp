@@ -2,8 +2,8 @@ package parser
 
 import (
 	"log"
-	"stone/ast"
-	"stone/lexer"
+	"stonepp/ast"
+	"stonepp/lexer"
 
 	"golang.org/x/exp/slices"
 )

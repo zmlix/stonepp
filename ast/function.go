@@ -2,7 +2,7 @@ package ast
 
 import (
 	"fmt"
-	"stone/env"
+	"stonepp/env"
 )
 
 type FunctionType int

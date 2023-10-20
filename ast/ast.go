@@ -3,8 +3,8 @@ package ast
 import (
 	"fmt"
 	"log"
-	"stone/env"
-	"stone/lexer"
+	"stonepp/env"
+	"stonepp/lexer"
 )
 
 type ASTNode interface {

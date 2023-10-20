@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"stone/ast"
-	"stone/env"
-	"stone/lexer"
-	"stone/parser"
-	"stone/utils"
+	"stonepp/ast"
+	"stonepp/env"
+	"stonepp/lexer"
+	"stonepp/parser"
+	"stonepp/utils"
 )
 
 func Shell(env env.Env) {
@@ -20,7 +20,7 @@ func Shell(env env.Env) {
 		}
 	}()
 
-	fmt.Println("stone++")
+	fmt.Println("stonepp++")
 	var code string
 	var code_ string
 	var tokens []*lexer.Token
@@ -52,13 +52,10 @@ func Shell(env env.Env) {
 			code += "\n" + code_
 		}
 
-		// fmt.Println("code : ", code)
 		tokens = lexer.ParseToken(code)
 		nodes = parser.Parser(tokens)
 		for _, node := range nodes {
-			// fmt.Printf("%v %T\n", node, node)
-			utils.PrintResult(node.Eval(env))
-			// node.Eval(env)
+			node.Eval(env)
 		}
 
 	}
@@ -70,7 +67,7 @@ func RunShell() {
 }
 
 func RunInterpreter(path string) {
-	file := "code/sum.stone"
+	file := path
 	code, err := utils.OpenCodeFile(file)
 	if err != nil {
 		log.Fatalln(err)

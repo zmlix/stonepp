@@ -3,7 +3,7 @@ package ast
 import (
 	"fmt"
 	"log"
-	"stone/env"
+	"stonepp/env"
 )
 
 type ClassBody struct {
