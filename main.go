@@ -28,7 +28,6 @@ func Shell(env env.Env) {
 		}
 	}()
 
-	fmt.Println(stonepp)
 	var code string
 	var code_ string
 	var tokens []*lexer.Token
@@ -70,6 +69,7 @@ func Shell(env env.Env) {
 }
 
 func RunShell() {
+	fmt.Println(stonepp)
 	env := &env.GlobalEnv{VarMap: make(map[string]any)}
 	Shell(env)
 }
