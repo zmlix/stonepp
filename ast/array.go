@@ -31,12 +31,27 @@ func (ar *ArrayRef) String() string {
 	return fmt.Sprintf("[%v]", ar.index)
 }
 
+func (ar *ArrayRef) EvalStringRef(str string) string {
+	if ar.index < 0 || ar.index >= len(str) {
+		log.Panicf("RangeError line %4v: %s", ar.LineNumber(), "不合法的索引长度")
+	}
+	return string(str[ar.index : ar.index+1])
+}
+
 func (ar *ArrayRef) EvalArrayRef(arr *Array) any {
 	if arr.Has(ar.index) {
 		return arr.Get(ar.index)
 	}
 	log.Panicf("RangeError line %4v: %s", ar.LineNumber(), "不合法的索引长度")
 	return nil
+}
+
+func (ar *ArrayRef) EvalArrayRefModify(arr *Array, value any) {
+	if arr.Has(ar.index) {
+		arr.array[ar.index] = value
+		return
+	}
+	log.Panicf("RangeError line %4v: %s", ar.LineNumber(), "不合法的索引长度")
 }
 
 type Elements struct {
@@ -99,7 +114,11 @@ func (a *Array) Get(index int) any {
 func (a *Array) String() string {
 	s := ""
 	for i, child := range a.array {
-		s += fmt.Sprintf("%v", child)
+		if _, ok := child.(string); ok {
+			s += fmt.Sprintf("\"%v\"", child)
+		} else {
+			s += fmt.Sprintf("%v", child)
+		}
 		if i != a.len-1 {
 			s += ","
 		}

@@ -53,7 +53,8 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 			res := be.Left().ChildrenList()[0].Eval(env)
 			for i := 0; i < postfixLen; i++ {
 				left := be.Left().(*PrimaryExpr).Postfix()
-				dot, ok := left[i].Eval(env).(*Dot)
+				left_ := left[i].Eval(env)
+				dot, ok := left_.(*Dot)
 				if ok {
 					switch r := res.(type) {
 					case *ClassObject:
@@ -66,6 +67,16 @@ func (be *BinaryExpr) Eval(env env.Env) any {
 						}
 					default:
 						log.Panicf("TypeError line %4v: \"%v\" 不可访问", be.LineNumber(), dot.Name())
+					}
+				}
+				ref, ok := left_.(*ArrayRef)
+				if ok {
+					switch r := res.(type) {
+					case *Array:
+						ref.EvalArrayRefModify(r, right)
+						return right
+					default:
+						log.Panicf("TypeError line %4v: %T 类型不可索引访问", be.LineNumber(), res)
 					}
 				}
 			}
@@ -341,6 +352,17 @@ func (pe *PrimaryExpr) EvalSub(env env.Env, k int) any {
 		return pe.Children[0].Eval(env)
 	}
 	res := pe.EvalSub(env, k-1)
+
+	str, ok := res.(string)
+	if ok {
+		switch v := pe.Children[k].Eval(env).(type) {
+		case *ArrayRef:
+			return v.EvalStringRef(str)
+		default:
+			log.Panicf("TypeError line %4v: %T %v", pe.LineNumber(), str, "不可进行此操作")
+		}
+		return nil
+	}
 
 	arrayMethod, ok := res.(*ArrayMethod)
 	if ok {
