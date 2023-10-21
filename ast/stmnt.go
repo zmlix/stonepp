@@ -38,7 +38,7 @@ func (ast *BlockStmnt) Eval(env env.Env) any {
 			return r
 		}
 	}
-	return res
+	return nil
 }
 
 func (ast *BlockStmnt) EvalClass(env *env.DefEnv) any {

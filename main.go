@@ -62,9 +62,8 @@ func Shell(env env.Env) {
 		tokens = lexer.ParseToken(code)
 		nodes = parser.Parser(tokens)
 		for _, node := range nodes {
-			node.Eval(env)
+			utils.PrintResult(node.Eval(env))
 		}
-
 	}
 }
 

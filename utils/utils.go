@@ -15,6 +15,11 @@ func OpenCodeFile(file string) (string, error) {
 
 func PrintResult(result any) {
 	if result != nil {
-		fmt.Printf("%v\n", result)
+		switch r := result.(type) {
+		case string:
+			fmt.Printf("\"%v\"\n", r)
+		default:
+			fmt.Printf("%v\n", r)
+		}
 	}
 }
